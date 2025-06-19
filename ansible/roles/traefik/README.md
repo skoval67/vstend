@@ -1,7 +1,7 @@
-Vault
+Traefik
 =========
 
-Установка Hashicorp Vault
+Установка Traefik
 
 Example Playbook
 ----------------

@@ -6,5 +6,5 @@ Vault
 Example Playbook
 ----------------
 ```
-ansible-playbook -l vault -t vault playbook.yaml
+ansible-playbook -b playbook.yml -t vault
 ```
