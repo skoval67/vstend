@@ -1,0 +1,33 @@
+services:
+  vault:
+    image: hashicorp/vault:1.19
+    hostname: vault
+    container_name: vault
+    environment:
+      VAULT_ADDR: http://localhost:{{ vault_port }}
+      VAULT_LOCAL_CONFIG: '{{ vault_config | to_json }}'
+    volumes:
+      - vault-data:/vault/file/
+      - vault-logs:/vault/logs/
+    cap_add:
+      - IPC_LOCK
+    command: server
+    restart: always
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.vault.rule=Host(`vault.tripleap.ru`)
+        - traefik.http.routers.vault.entrypoints=https
+        - traefik.http.routers.vault.tls=true
+        - traefik.http.routers.vault.tls.certresolver=le
+        - traefik.http.services.vault.loadbalancer.server.port={{ vault_port }}
+    networks:
+      - hub
+
+networks:
+  hub:
+    external: true
+
+volumes:
+  vault-data:
+  vault-logs:

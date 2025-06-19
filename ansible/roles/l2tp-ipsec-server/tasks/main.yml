@@ -1,0 +1,22 @@
+---
+# Setup/install tasks.
+- name: Ensure L2TP/IPSec is installed on system.
+  ansible.builtin.apt:
+    name: "{{ l2tp_ipsec_server_packages }}"
+    state: present
+
+- name: Copy config files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "/etc/{{ item.dest }}"
+    mode: "0644"
+  loop: "{{ config_files }}"
+  notify:
+    - Restart vpn-server
+
+- name: Ensure VPN services is started and enabled to start at boot.
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: started
+    enabled: true
+  loop: "{{ l2tp_ipsec_server_packages }}"

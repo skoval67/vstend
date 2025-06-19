@@ -1,0 +1,20 @@
+---
+# vars file for vault
+work_dir: /opt/vault
+vault_port: 8200
+
+config_files:
+  - { src: docker-compose.yaml.j2, dest: docker-compose.yaml }
+
+vault_config:
+  storage:
+    file:
+      path: /vault/file
+  listener:
+    - tcp:
+        address: 0.0.0.0:{{ vault_port }}
+        tls_disable: 1
+  ui: true
+  default_lease_ttl: 168h
+  max_lease_ttl: 720h
+  disable_mlock: true

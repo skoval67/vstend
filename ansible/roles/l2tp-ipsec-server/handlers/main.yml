@@ -1,0 +1,6 @@
+---
+- name: Restart vpn-server
+  ansible.builtin.service:
+    name: "{{ item }}"
+    state: restarted
+  loop: "{{ l2tp_ipsec_server_packages }}"

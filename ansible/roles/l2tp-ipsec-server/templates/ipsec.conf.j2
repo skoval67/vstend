@@ -1,0 +1,19 @@
+# Managed by ansible
+
+config setup
+    #nat_traversal=yes
+
+conn %default
+    auto=add
+
+conn l2tp
+    authby=secret
+    pfs=no
+    rekey=no
+    keyingtries=20
+    ikelifetime=8h
+    type=transport
+    left={{ ansible_default_ipv4['address'] }}
+    leftprotoport=udp/l2tp
+    right=%any
+    rightprotoport=udp/%any

@@ -1,0 +1,15 @@
+#cloud-config
+ssh_pwauth: false
+users:
+- default
+- name: admin
+  groups: sudo
+  sudo: 'ALL=(ALL) NOPASSWD: ALL'
+  shell: /bin/bash
+  ssh_authorized_keys:
+  - ${admin_ssh_pub_key}
+- name: ubuntu
+  ssh_authorized_keys:
+  - ${ubuntu_ssh_pub_key}
+runcmd:
+  - wget -O - https://monitoring.api.cloud.yandex.net/monitoring/v2/unifiedAgent/config/install.sh | bash

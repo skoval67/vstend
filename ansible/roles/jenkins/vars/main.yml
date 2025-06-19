@@ -1,0 +1,12 @@
+---
+# vars file for jenkins
+work_dir: /opt/jenkins
+build_files:
+  - jenkins-plugins.txt
+  - Dockerfile
+config_files:
+  - { src: docker-compose.yml.j2, dest: "{{ work_dir }}/docker-compose.yml" }
+  - { src: jenkins-config.yml.j2, dest: "{{ work_dir }}/jenkins-config.yml" }
+jenkins_adminAddress: admin@tripleap.ru
+jenkins_vault_url: https://vault.tripleap.ru/
+jenkins_vault_token: "{{ lookup('ansible.builtin.env', 'VAULT_TOKEN') }}"

@@ -1,0 +1,128 @@
+credentials:
+  system:
+    domainCredentials:
+    - credentials:
+      - vaultTokenCredential:
+          description: "vault-token"
+          id: "vault-token"
+          scope: GLOBAL
+          token: "{{ jenkins_vault_token }}"
+      - basicSSHUserPrivateKey:
+          description: "YC SSH Private Key"
+          id: "yc_ssh"
+          privateKeySource:
+            directEntry:
+              privateKey: "${yc_ssh}"
+          scope: GLOBAL
+          username: "jenkins"
+      - file:
+          description: "Yandex Service Account"
+          fileName: "terraform.json"
+          id: "yc_sa"
+          scope: GLOBAL
+          secretBytes: "${yc_sa}"
+
+jenkins:
+  slaveAgentPort: 50000
+  systemMessage: "Jenkins configured by JCasC plugin"
+  mode: NORMAL
+  numExecutors: 0
+
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          password: "${admin_password}"
+
+  authorizationStrategy:
+    projectMatrix:
+      entries:
+        - user:
+            name: admin
+            permissions:
+              - Overall/Administer
+        - user:
+            name: anonymous
+            permissions:
+              - View/Read
+        - group:
+            name: authenticated
+            permissions:
+              - Overall/Read
+
+  clouds:
+  - docker:
+      dockerApi:
+        dockerHost:
+          uri: "unix:///var/run/docker.sock"
+      name: "DockerCloud"
+      templates:
+      - connector: "attach"
+        dockerTemplateBase:
+          image: "jenkins/agent"
+      - connector: "attach"
+        dockerTemplateBase:
+          image: "jenkins/jnlp-agent-alpine"
+        labelString: "python"
+        mode: EXCLUSIVE
+        name: "python"
+  - yandex:
+      authSleepMs: 300000
+      credentialsId: "yc_sa"
+      name: "yandex_cloud"
+      sshKeysCredentialsId: "yc_ssh"
+      templates:
+      - idleTerminationMinutes: "90"
+        description: "linux agent"
+        initVMTemplate: |-
+          platform_id: 'standard-v3'
+          zone_id: 'ru-central1-b'
+          folder_id: '${yc_folder_id}'
+          resources_spec: {
+            memory: 4294967296
+            cores: 2
+            core_fraction: 20
+          }
+          boot_disk_spec: {
+            mode: READ_WRITE
+            disk_spec: {
+              type_id: 'network-hdd'
+              size: 16106127360
+              image_id: '${yc_agent_imageid}'
+            }
+            auto_delete: true
+          }
+          network_interface_specs: {
+            subnet_id: '${yc_subnet_id}'
+            primary_v4_address_spec: {
+              one_to_one_nat_spec: {
+                ip_version: IPV4
+              }
+            }
+          }
+          scheduling_policy: {
+            preemptible: true
+          }
+        labels: "yc"
+        mode: EXCLUSIVE
+        numExecutors: 1
+        remoteFS: "/tmp/hudson"
+        stopOnTerminate: false
+        tmpDir: "/tmp"
+        vmName: "jenkinsrunner"
+
+unclassified:
+  location:
+    adminAddress: {{ jenkins_adminAddress }}
+    url: https://jenkins.tripleap.ru/
+
+  hashicorpVault:
+    configuration:
+      engineVersion: 2
+      timeout: 60
+      vaultCredentialId: "vault-token"
+      vaultUrl: "{{ jenkins_vault_url }}"
+
+  prometheusConfiguration:
+    collectingMetricsPeriodInSeconds: 120

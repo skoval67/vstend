@@ -1,0 +1,30 @@
+---
+# tasks file for vault
+- name: Create a directories if they do not exist
+  ansible.builtin.file:
+    path: "{{ work_dir }}/{{ item.path }}"
+    state: directory
+    mode: '0755'
+    owner: "{{ item.owner }}"
+  loop: "{{ directories }}"
+
+- name: Copy config files
+  ansible.builtin.copy:
+    src: yc-iam-token.txt
+    dest: "{{ work_dir }}"
+    mode: "0644"
+
+- name: Template config files
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ work_dir }}/{{ item.dest }}"
+    mode: "0644"
+  loop:
+    "{{ config_files }}"
+
+- name: Deploy vault from a compose file
+  community.docker.docker_stack:
+    state: present
+    name: traefik
+    compose:
+      - "{{ work_dir }}/docker-compose.yaml"

@@ -1,0 +1,27 @@
+---
+# handlers file for jenkins
+- name: Rebuild jenkins container
+  community.docker.docker_image:
+    build:
+      path: "{{ work_dir }}"
+    name: myjenkins:latest
+    source: build
+    force_source: true
+
+- name: Deploy jenkins from a compose file
+  block:
+    - name: Stop
+      community.docker.docker_stack:
+        state: absent
+        name: jenkins
+        compose:
+          - "{{ work_dir }}/docker-compose.yml"
+      listen: Restart jenkins
+
+    - name: Start
+      community.docker.docker_stack:
+        state: present
+        name: jenkins
+        compose:
+          - "{{ work_dir }}/docker-compose.yml"
+      listen: Restart jenkins

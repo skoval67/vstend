@@ -1,0 +1,47 @@
+services:
+  traefik:
+    image: traefik:v3.4.1
+    container_name: traefik
+    ports:
+      - 80:80
+      - 443:443
+    command:
+      - --api.insecure=true
+      - --providers.swarm.exposedbydefault=false
+      - --providers.swarm.endpoint=unix:///var/run/docker.sock
+      - --entryPoints.http.address=:80
+      - --entryPoints.https.address=:443
+      - --entrypoints.http.http.redirections.entryPoint.to=https
+      - --entrypoints.http.http.redirections.entryPoint.scheme=https
+      - --entrypoints.http.http.redirections.entrypoint.permanent=true
+      - --certificatesresolvers.le.acme.email=svkoval@mail.ru
+      - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json
+      - --certificatesResolvers.le.acme.dnsChallenge.provider=yandexcloud
+      - --providers.file.filename=/configs/traefik_tls.yml
+      - --log.level=INFO
+    deploy:
+      labels:
+        - traefik.http.middlewares.redirect-to-https.redirectscheme.scheme=https
+      placement:
+        constraints:
+          - node.role == manager
+    environment:
+      YANDEX_CLOUD_IAM_TOKEN_FILE: /run/secrets/traefik_yc-iam-token
+      YANDEX_CLOUD_FOLDER_ID: {{ lookup('ansible.builtin.env', 'YC_FOLDER_ID') }}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./letsencrypt:/letsencrypt
+      - ./traefik_tls.yml:/configs/traefik_tls.yml
+    restart: unless-stopped
+    networks:
+      - hub
+    secrets:
+      - traefik_yc-iam-token
+
+networks:
+  hub:
+    external: true
+
+secrets:
+  traefik_yc-iam-token:
+    file: yc-iam-token.txt

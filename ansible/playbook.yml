@@ -1,0 +1,45 @@
+---
+- name: Check all systems are ready
+  hosts: all
+  gather_facts: false
+  become: false
+  tasks:
+    - name: Wait for system to become reachable
+      ansible.builtin.wait_for_connection:
+
+- name: Prepare
+  hosts: all
+  roles:
+    - osupgrade
+    - system-hardering
+    - role: docker_install
+      vars:
+        init_swarm: true
+
+- name: Setup VPN
+  hosts: srvr
+  vars_files: l2tp_users.yml
+  roles:
+    - role: l2tp-ipsec-server
+      vars:
+        l2tp_ipsec_server_local_ip: 192.168.0.3
+        l2tp_ipsec_server_ip_range: 192.168.0.129-192.168.0.254
+  tags: vpn, never
+
+- name: Setup traefik
+  hosts: srvr
+  roles:
+    - traefik
+  tags: traefik, never
+
+- name: Setup vault
+  hosts: srvr
+  roles:
+    - vault
+  tags: vault, never
+
+- name: Setup Jenkins server
+  hosts: srvr
+  roles:
+    - jenkins
+  tags: jenkins, never

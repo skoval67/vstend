@@ -1,0 +1,7 @@
+.ansible
+.vscode
+.env
+.terraform*
+.*.tfvars
+ansible.log
+ansible/roles/traefik/files/yc-iam-token.txt

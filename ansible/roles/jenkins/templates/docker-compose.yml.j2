@@ -1,0 +1,29 @@
+services:
+
+  jenkins:
+    image: myjenkins:latest
+    restart: always
+    environment:
+      JAVA_OPTS: "-Dfile.encoding=UTF8 -Duser.timezone=Asia/Chita -Xmx768m -Djenkins.install.runSetupWizard=false ${JAVA_OPTS:-}"
+      CASC_JENKINS_CONFIG: "/jenkins-config.yml"
+      CASC_VAULT_URL: {{ jenkins_vault_url }}
+      CASC_VAULT_TOKEN: {{ jenkins_vault_token }}
+      CASC_VAULT_PATHS: "kv/jenkins"
+    volumes:
+      - ./jenkins_home:/var/jenkins_home:rw
+      - ./jenkins-config.yml:/jenkins-config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+    deploy:
+      labels:
+        - traefik.enable=true
+        - traefik.http.routers.jenkins.rule=Host(`jenkins.tripleap.ru`)
+        - traefik.http.routers.jenkins.entrypoints=https
+        - traefik.http.routers.jenkins.tls=true
+        - traefik.http.routers.jenkins.tls.certresolver=le
+        - traefik.http.services.jenkins.loadbalancer.server.port=8080
+    networks:
+      - hub
+
+networks:
+  hub:
+    external: true

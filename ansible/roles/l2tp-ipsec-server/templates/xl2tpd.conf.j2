@@ -1,0 +1,18 @@
+; Managed by ansible
+;
+
+[global]
+access control = no
+ipsec saref = yes
+saref refinfo = 30
+
+[lns default]
+ip range = {{ l2tp_ipsec_server_ip_range }}
+local ip = {{ l2tp_ipsec_server_local_ip }}
+refuse pap = yes
+require authentication = yes
+pppoptfile = /etc/ppp/options.xl2tpd
+length bit = yes
+hidden bit = no
+name = l2tpd
+flow bit = yes

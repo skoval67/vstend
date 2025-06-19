@@ -1,0 +1,19 @@
+# Managed by ansible
+
+ipcp-accept-local
+ipcp-accept-remote
+{% for dns_server in l2tp_ipsec_server_dns %}
+ms-dns  {{ dns_server }}
+{% endfor %}
+auth
+crtscts
+idle 1800
+mtu {{ l2tp_ipsec_mtu }}
+mru {{ l2tp_ipsec_mru }}
+nodefaultroute
+debug
+modem
+proxyarp
+lcp-echo-interval 30
+lcp-echo-failure 4
+logfile /var/log/xl2tpd.log

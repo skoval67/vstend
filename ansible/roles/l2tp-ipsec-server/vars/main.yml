@@ -1,0 +1,10 @@
+---
+l2tp_ipsec_server_packages:
+  - xl2tpd
+  - strongswan-starter
+config_files:
+  - { src: ipsec.conf.j2, dest: ipsec.conf }
+  - { src: ipsec.secrets.j2, dest: ipsec.secrets }
+  - { src: xl2tpd.conf.j2, dest: xl2tpd/xl2tpd.conf }
+  - { src: options.xl2tpd.j2, dest: ppp/options.xl2tpd }
+  - { src: chap-secrets.j2, dest: ppp/chap-secrets }
